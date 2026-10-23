@@ -28,10 +28,6 @@ CE 全程后台运行，无弹窗、无闪屏、不写注册表。
 
 前往 [Releases](https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest) 下载 `不问凡尘修改器_V2.0.exe`。
 
-## 使用说明 / Manual
-
-完整图文说明见仓库内 [`使用说明.txt`](./使用说明.txt)（随发行包附带）。
-
 ## 使用 / Usage
 
 1. 先开游戏，再双击修改器（管理员权限）
