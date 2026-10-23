@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "date": "2026-10-24",
-  "note": "x",
+  "note": "修复昼夜切换、白天主题输入框配色、多版本游戏自动适配、写入回执与自检系统",
   "download": "https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest",
   "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.0/BWF-Trainer-V2.0.exe"
 }
