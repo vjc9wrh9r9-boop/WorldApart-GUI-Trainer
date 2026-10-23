@@ -85,6 +85,7 @@ THEME_NIGHT = dict(
     RED="#B4635A", BTN="#15231E", BTN_HI="#1E3229",
     TB_BG="#0A110F", TB_CLOSE_HF="#4A1E1A", TB_CLOSE_ED="#B5534A",
     TB_CLOSE_TF="#F3BDB4",
+    ENTRY_BG="#0B1613", ENTRY_FG="#EBD9A6", ENTRY_INS="#EBD9A6",
 )
 THEME_DAY = dict(
     INK="#ECE6D6", PANEL="#F4EFE1", PANEL_HI="#FAF6EA",
@@ -95,6 +96,7 @@ THEME_DAY = dict(
     RED="#A03D33", BTN="#F0EADA", BTN_HI="#E5DCC6",
     TB_BG="#E7E0CD", TB_CLOSE_HF="#E0C4BC", TB_CLOSE_ED="#A05248",
     TB_CLOSE_TF="#7A2A22",
+    ENTRY_BG="#FBF7EC", ENTRY_FG="#2A2620", ENTRY_INS="#2A2620",
 )
 
 
@@ -2309,8 +2311,9 @@ class App:
             cv.create_rectangle(22, y, 25, y + 32, fill=C.GOLD_DIM, outline='')
             cv.create_text(40, y + 17, text=rname, font=FONT_SMALL, fill=C.TEXT, anchor='w')
             var = tk.StringVar()
-            ent = tk.Entry(win, textvariable=var, font=FONT_NORMAL, bg='#0B1613',
-                           fg=C.GOLD_HI, insertbackground=C.GOLD_HI, relief='flat', bd=0,
+            ent = tk.Entry(win, textvariable=var, font=FONT_NORMAL,
+                           bg=C.ENTRY_BG, fg=C.ENTRY_FG,
+                           insertbackground=C.ENTRY_INS, relief='flat', bd=0,
                            highlightthickness=1, highlightbackground=C.LINE,
                            highlightcolor=C.GOLD)
             cv.create_window(200, y, window=ent, width=210, height=32, anchor='nw')
