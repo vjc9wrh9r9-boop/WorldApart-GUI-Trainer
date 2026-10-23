@@ -1947,15 +1947,22 @@ class App:
                 return
             note = str(info.get('note', ''))[:50]
             self.update_available = True
+            self.update_info = info
             self.set_status('发现新版本 V%s（当前 V%s）' % (rv, VERSION),
-                            '%s —— 点击状态卡打开下载页' % note)
+                            '%s —— 点击状态卡直接下载新版' % note)
             log_boot('update: new version %s' % rv)
         except Exception as e:
             log_boot('update check failed: %r' % e)
 
     def _on_status_click(self):
         if getattr(self, 'update_available', False):
-            open_release_page()
+            info = getattr(self, 'update_info', {}) or {}
+            url = info.get('download_mirror') or info.get('download') or RELEASE_PAGE
+            try:
+                os.startfile(url)
+            except Exception:
+                import webbrowser
+                webbrowser.open(url)
 
     def _detect_table_bg(self, pid):
         try:
