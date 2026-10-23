@@ -1365,7 +1365,7 @@ class App:
                       hover_fill=C.BTN_HI, hover_edge=C.GOLD, hover_tfill=C.GOLD_HI)
 
         # 拖动区（标题栏其余部分）
-        self._hit_add(cv, 0, 0, bx_min - 2, th, 'drag', None, hwnd=hwnd)
+        self._hit_add(cv, 0, 0, bx_th - 2, th, 'drag', None, hwnd=hwnd)
 
     def toggle_theme(self):
         detail = ''
@@ -1374,6 +1374,9 @@ class App:
         except Exception:
             pass
         main_txt = getattr(self, 'status_main', '')
+        cfg_idx = getattr(self, 'cfg_feature', None)
+        cfg_open = (getattr(self, 'cfg_win', None) is not None
+                    and self.cfg_win.winfo_exists())
         C.THEME_NAME = 'day' if C.THEME_NAME == 'night' else 'night'
         save_theme_pref(C.THEME_NAME)
         apply_theme(C.THEME_NAME)
@@ -1381,6 +1384,9 @@ class App:
         self.hide_notice()
         self.draw_main()
         self.set_status(main_txt, detail)
+        # 配置窗口开着的话，用新主题重开一次（旧窗口是旧配色）
+        if cfg_open and cfg_idx is not None:
+            self.root.after(80, lambda: self.open_config(cfg_idx))
 
     # ---------- 主界面 ----------
     def build_main_ui(self):
