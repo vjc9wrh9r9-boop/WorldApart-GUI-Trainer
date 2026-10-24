@@ -83,10 +83,9 @@ for rel, p in sorted(target.items()):
                        'sha': blob['sha']})
     print('  blob %s (%d B)' % (rel, len(data)))
 
-# 建树（base_tree 保留其他文件；tree_items 覆盖/新增；
-# build/ 等垃圾不在 items 里 -> 自动从树中消失）
+# 建树：不带 base_tree，tree_items 就是完整树（build/ 等垃圾自动消失）
 tree = api('POST', '/repos/%s/%s/git/trees' % (OWNER, REPO),
-           {'base_tree': base_tree, 'tree': tree_items})
+           {'tree': tree_items})
 print('[树] %s, %d 项' % (tree['sha'][:10], len(tree['tree'])))
 
 # 建 commit
