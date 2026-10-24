@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
-"""从作者原始老表生成三张"版本切换表"（去广告、无 LuaScript）
-   09-29 / 10-01 / 10-17 -> BWF_tbl_0929.CT / BWF_tbl_1001.CT / BWF_tbl_1017.CT
+"""扫描 build/runtime 里的所有作者原始 CT 表（非 BWF_ 前缀），
+   逐张生成"版本切换表"（去广告、无 LuaScript）-> BWF_tbl_<日期>.CT
+   修改器运行时按特征码命中自动选择加载哪张。
 """
 import os
+import re
+import sys
+import time
 import xml.etree.ElementTree as ET
 
-ROOT = r'E:/workbuddy 数据/2026-10-15-00-57-48/bwf'
+HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, 'build', 'runtime')
 
 AD_MARKS = ('哔哩哔哩', '缤纷颜色', '配套演示视频', 'bilibili.com', 'bilibili',
@@ -40,8 +45,7 @@ def strip_ads(xml):
             break
         block = xml[s:end]
         if any(m in block for m in AD_MARKS):
-            removed.append(block[block.find('<Description>') + 13:
-                                 block.find('</Description>')][:30])
+            removed.append(1)
             while end < len(xml) and xml[end] in '\r\n':
                 end += 1
             i = end
@@ -51,20 +55,36 @@ def strip_ads(xml):
     return ''.join(out), removed
 
 
-TABLES = [
-    ('0929', r'E:/360MoveData/Users/新建文件夹/不问凡尘-缤纷颜色-bilibili-2026-09-29更V2.CT'),
-    ('1001', r'E:/360MoveData/Users/新建文件夹/不问凡尘-缤纷颜色-bilibili-2026-10-01更V2.CT'),
-    ('1017', r'E:/360MoveData/Users/新建文件夹/不问凡尘/不问凡尘-缤纷颜色-bilibili-2026-10-17更V1.CT'),
-]
+def main():
+    if not os.path.isdir(OUT):
+        print('错误: 找不到 %s（先放运行时和 CT 表）' % OUT)
+        sys.exit(1)
+    srcs = sorted(f for f in os.listdir(OUT)
+                  if f.lower().endswith('.ct') and not f.startswith('BWF_'))
+    if not srcs:
+        print('提示: runtime 里没有作者原始表，跳过版本切换表生成')
+        return
+    n_out = 0
+    for f in srcs:
+        src = os.path.join(OUT, f)
+        m = re.search(r'\d{4}-(\d{2})-(\d{2})', f)
+        tag = (m.group(1) + m.group(2)) if m else \
+            time.strftime('%m%d', time.localtime(os.path.getmtime(src)))
+        out = os.path.join(OUT, 'BWF_tbl_%s.CT' % tag)
+        if os.path.exists(out) and os.path.getmtime(out) >= os.path.getmtime(src):
+            print('%s: 已是最新，跳过' % tag)
+            n_out += 1
+            continue
+        s = open(src, encoding='utf-8').read()
+        assert '<LuaScript>' not in s, '%s 意外包含 LuaScript' % f
+        s, ads = strip_ads(s)
+        open(out, 'w', encoding='utf-8').write(s)
+        root = ET.fromstring(s.lstrip('\ufeff'))
+        n = len(list(root.iter('CheatEntry')))
+        print('%s: 去广告 %d 条, 输出 %d 字节, 条目 %d 个 -> %s'
+              % (tag, len(ads), len(s.encode('utf-8')), n, os.path.basename(out)))
+        n_out += 1
+    print('版本切换表: %d 张' % n_out)
 
-for tag, src in TABLES:
-    s = open(src, encoding='utf-8').read()
-    assert '<LuaScript>' not in s, '%s 意外包含 LuaScript' % tag
-    s, ads = strip_ads(s)
-    out = os.path.join(OUT, 'BWF_tbl_%s.CT' % tag)
-    open(out, 'w', encoding='utf-8').write(s)
-    root = ET.fromstring(s.lstrip('\ufeff'))
-    n = len(list(root.iter('CheatEntry')))
-    print('%s: 去广告 %d 条, 输出 %d 字节, 条目 %d 个 -> %s'
-          % (tag, len(ads), len(s.encode('utf-8')), n, os.path.basename(out)))
-print('done')
+
+main()
