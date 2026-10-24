@@ -1,0 +1,8 @@
+build/
+src/dist/
+src/build/
+src/res.zip
+__pycache__/
+*.pyc
+*.orig
+*.bak
