@@ -2,8 +2,19 @@
 """给 CT 注入 BWF 无界面 Lua 模式"""
 import sys, os
 
-_DEF_CT = r"E:/360MoveData/Users/新建文件夹/不问凡尘/不问凡尘-缤纷颜色-bilibili-2026-10-17更V1.CT"
-CT_SRC = os.environ.get('CT_SRC') or _DEF_CT
+def _latest_author_ct(d):
+    """runtime 里作者原始表（排除 BWF_ 前缀的产物表）取最新"""
+    try:
+        cands = [os.path.join(d, f) for f in os.listdir(d)
+                 if f.lower().endswith('.ct') and not f.startswith('BWF_')]
+        return max(cands, key=os.path.getmtime) if cands else None
+    except OSError:
+        return None
+
+
+_DEF_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        'build', 'runtime')
+CT_SRC = os.environ.get('CT_SRC') or _latest_author_ct(_DEF_DIR)
 CT_OUT = sys.argv[1] if len(sys.argv) > 1 else "build/runtime/BWF_不问凡尘_V1.CT"
 
 LUA = r"""
@@ -236,6 +247,10 @@ def strip_ads(xml):
     return ''.join(out), removed
 
 
+if not CT_SRC or not os.path.exists(CT_SRC):
+    print('错误: build/runtime 里没有作者原始 CT 表（BWF_ 开头的除外）')
+    print('请从作者网盘下载最新表放到 build/runtime/ 后重试。')
+    sys.exit(1)
 data = open(CT_SRC, encoding='utf-8').read()
 data, ads = strip_ads(data)
 print("去广告条目 %d 个:" % len(ads))
