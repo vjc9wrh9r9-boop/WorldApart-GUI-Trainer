@@ -24,6 +24,10 @@ CE 全程后台运行，无弹窗、无闪屏、不写注册表。
 - **异常自愈**：异常退出残留的游戏代码补丁，下次启动自动还原
 - **检查更新**：启动时自动检查 GitHub 上的新版本
 
+## 从源码构建
+
+见 [BUILD.md](BUILD.md)。
+
 ## 下载 / Download
 
 前往 [Releases](https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest) 下载 `不问凡尘修改器_V2.0.exe`。
@@ -57,12 +61,21 @@ CE 全程后台运行，无弹窗、无闪屏、不写注册表。
 
 ```
 src/main.py          GUI 主程序（tkinter，无第三方 UI 依赖）
+src/trainer.spec     PyInstaller 打包配置（UAC 管理员 + 图标）
+tools/build_all.py   一键构建（Lua 注入 -> 版本表 -> res.zip -> exe）
 tools/build_ct.py    CT 表后处理：去广告 + 注入无人值守 Lua
 tools/swap_ct.py     一键换表重打包（作者出新表后 1 分钟适配）
 tools/make_tables.py 从作者历史表生成版本切换表
 tools/detect_aob.py  特征码有效性检测（诊断工具）
+tools/pack_res.py    组装 res.zip（运行时 + 表）
+scripts/publish_github.py  一键发版（源码/文档/Release 全同步）
+docs/使用说明.txt    完整图文使用说明
 version.json         自动更新元数据
+BUILD.md             构建指南
+.gitignore           构建产物排除清单
 ```
+
+> `src/res.zip` 与 `dist/` 为构建产物，不入库（见 .gitignore）。
 
 > **本仓库不含** Cheat Engine 运行时与修改表数据，请从原作者网盘获取。
 
