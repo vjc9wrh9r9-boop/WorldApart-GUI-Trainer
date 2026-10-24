@@ -53,10 +53,14 @@ def enc(p):
 
 # 收集目标文件
 target = {}
+SKIP_DIRS = {'.git', 'build', 'dist', '__pycache__'}
 for dp, _, fn in os.walk(REPO_DIR):
-    if '.git' in dp or 'dist' in dp.split(os.sep):
+    parts = set(dp.split(os.sep))
+    if parts & SKIP_DIRS:
         continue
     for f in fn:
+        if f.endswith(('.exe', '.pyc')) or f == 'res.zip':
+            continue
         p = os.path.join(dp, f)
         rel = os.path.relpath(p, REPO_DIR).replace('\\', '/')
         target[rel] = p
