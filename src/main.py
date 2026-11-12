@@ -20,7 +20,7 @@ from tkinter import ttk, messagebox
 
 APP_NAME = "不问凡尘修改器"
 VERSION = "2.1"
-RT_VER = "14"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
+RT_VER = "15"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
 
 TMP = os.environ.get('TEMP') or os.environ.get('TMP') or r'C:\Windows\Temp'
 LOCAL = os.environ.get('LOCALAPPDATA') or TMP
