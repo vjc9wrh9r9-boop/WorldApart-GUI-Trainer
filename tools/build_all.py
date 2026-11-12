@@ -44,8 +44,9 @@ def main():
         print('已将 %s 作为主表' % os.path.basename(src_ct))
     run([PY, os.path.join(HERE, 'build_ct.py'), MAIN_CT])
 
-    # 2) 生成版本切换表
+    # 2) 生成版本切换表 + 统一 ID 到主表体系
     run([PY, os.path.join(HERE, 'make_tables.py')])
+    run([PY, os.path.join(HERE, 'renumber_tables.py')])
 
     # 3) 生成表指纹索引 + 打 res.zip
     run([PY, os.path.join(HERE, 'gen_table_index.py')])
