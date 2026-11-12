@@ -20,7 +20,7 @@ from tkinter import ttk, messagebox
 
 APP_NAME = "不问凡尘修改器"
 VERSION = "2.1"
-RT_VER = "13"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
+RT_VER = "14"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
 
 TMP = os.environ.get('TEMP') or os.environ.get('TMP') or r'C:\Windows\Temp'
 LOCAL = os.environ.get('LOCALAPPDATA') or TMP
@@ -728,7 +728,10 @@ TABLE_NAMES = {
 
 
 # --- 自动更新：GitHub 仓库的 version.json ---
-UPDATE_JSON_URL = "https://raw.githubusercontent.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/main/version.json"
+UPDATE_JSON_URLS = [
+    "https://raw.githubusercontent.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/main/version.json",
+    "https://gh-proxy.com/https://raw.githubusercontent.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/main/version.json",
+]
 RELEASE_PAGE = "https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest"
 
 
@@ -799,6 +802,65 @@ def _scan_game_sigs(pid):
         if 'o_daotudian' in hits:
             return 'v0929', len(hits)
         return 'none', len(hits)
+    finally:
+        k32.CloseHandle(h)
+
+
+def _load_table_index():
+    """读 runtime/tables.json（构建时由 gen_table_index.py 生成）"""
+    try:
+        p = os.path.join(RT_DIR, 'tables.json')
+        with open(p, encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _scan_any_sigs(pid, sig_list):
+    """在游戏 GameAssembly.dll 里搜一组特征码，返回命中的特征字符串集合"""
+    k32 = ctypes.WinDLL('kernel32', use_last_error=True)
+    psapi = ctypes.WinDLL('psapi', use_last_error=True)
+    h = k32.OpenProcess(0x0410, False, pid)
+    if not h:
+        return None          # 进程打不开：调用方不应据此判定版本
+    try:
+        arr = (wintypes.HMODULE * 1024)()
+        need = wintypes.DWORD()
+        psapi.EnumProcessModulesEx(h, arr, ctypes.sizeof(arr), ctypes.byref(need), 0x03)
+        base = size = 0
+        for i in range(need.value // ctypes.sizeof(wintypes.HMODULE)):
+            hm = wintypes.HMODULE(arr[i])
+            nm = ctypes.create_unicode_buffer(260)
+            psapi.GetModuleBaseNameW(h, hm, nm, 260)
+            if nm.value.lower() == 'gameassembly.dll':
+                class MI7(ctypes.Structure):
+                    _fields_ = [('b', ctypes.c_void_p), ('s', wintypes.DWORD),
+                                ('e', ctypes.c_void_p)]
+                mi = MI7()
+                psapi.GetModuleInformation(h, hm, ctypes.byref(mi), ctypes.sizeof(mi))
+                base, size = mi.b or 0, mi.s
+                break
+        if not base or not sig_list:
+            return set()
+        sigs = [(x, bytes(int(y, 16) for y in x.split())) for x in sig_list]
+        hits = set()
+        maxsz = max(len(nd) for _, nd in sigs)
+        chunk = 8 << 20
+        off = 0
+        buf = ctypes.create_string_buffer(chunk + maxsz - 1)
+        rd = ctypes.c_size_t()
+        while off < size and len(hits) < len(sigs):
+            n = min(chunk + maxsz - 1, size - off)
+            if not k32.ReadProcessMemory(h, ctypes.c_void_p(base + off), buf, n,
+                                         ctypes.byref(rd)):
+                off += chunk
+                continue
+            data = buf.raw[:rd.value]
+            for nm, nd in sigs:
+                if nm not in hits and data.find(nd) >= 0:
+                    hits.add(nm)
+            off += chunk
+        return hits
     finally:
         k32.CloseHandle(h)
 
@@ -1949,10 +2011,19 @@ class App:
     def _check_update_bg(self):
         try:
             import urllib.request
-            req = urllib.request.Request(UPDATE_JSON_URL,
-                                         headers={'User-Agent': 'BWF-Trainer'})
-            with urllib.request.urlopen(req, timeout=8) as r:
-                info = json.loads(r.read().decode('utf-8'))
+            info = None
+            last_err = None
+            for u in UPDATE_JSON_URLS:
+                try:
+                    req = urllib.request.Request(u, headers={'User-Agent': 'BWF-Trainer'})
+                    with urllib.request.urlopen(req, timeout=10) as r:
+                        info = json.loads(r.read().decode('utf-8'))
+                    break
+                except Exception as e:
+                    last_err = e
+                    continue
+            if info is None:
+                raise last_err or RuntimeError('all update urls failed')
             rv = str(info.get('version', '')).strip()
             if not rv or rv == VERSION:
                 log_boot('update: up to date')
@@ -1979,25 +2050,69 @@ class App:
     def _detect_table_bg(self, pid):
         try:
             time.sleep(2.0)          # 等 heal 与 openProcess 稳定
-            mode, hits = _scan_game_sigs(pid)
+            idx = _load_table_index()
+            if not idx:
+                # 老包没有 tables.json：退回硬编码特征
+                mode, hits = _scan_game_sigs(pid)
+                log_boot('table detect(fallback): %s hits=%d' % (mode, hits))
+                if mode == 'v1110':
+                    self.set_status('已附加游戏 WorldApart.exe (PID %d)' % pid,
+                                    '已识别新版游戏，加载完整功能表')
+                    return
+                tbl = {'v1023': 'BWF_tbl_1017.CT',
+                       'v1001': 'BWF_tbl_1001.CT',
+                       'v0929': 'BWF_tbl_0929.CT'}.get(mode)
+                if not tbl:
+                    self.set_status('游戏版本过新或过旧', '当前表无法适配，等作者更新')
+                    return
+                self.send_cmd('LOAD|%s' % tbl)
+                self.set_status('已附加游戏 WorldApart.exe (PID %d)' % pid,
+                                '已按游戏版本加载 %s' % tbl)
+                return
+
+            # 表指纹识别：每个表自己的 aobscan 特征码全命中 = 该表适配
+            all_sigs = []
+            for info in idx.values():
+                for x in (info.get('sigs') or []):
+                    if x not in all_sigs:
+                        all_sigs.append(x)
+            hit_set = _scan_any_sigs(pid, all_sigs)
+            if hit_set is None:
+                log_boot('table index: 进程打不开（PID %d），跳过版本识别' % pid)
+                return
+            scored = []
+            for fname, info in idx.items():
+                sigs = info.get('sigs') or []
+                if not sigs:
+                    continue
+                hit = sum(1 for x in sigs if x in hit_set)
+                rate = hit / len(sigs)
+                scored.append((rate >= 1.0, rate, len(sigs), hit, fname))
+            if not scored:
+                return
+            # 全命中优先，其次特征多的（超集关系下更精确），再看命中率
+            scored.sort(key=lambda t: (t[0], t[1], t[2]), reverse=True)
+            full, rate, total, hit, best = scored[0]
+            log_boot('table index: best=%s %d/%d (%.0f%%)'
+                     % (best, hit, total, rate * 100))
+            for fr, rt, tt, hh, ff in scored:
+                log_boot('  idx %-30s %d/%d%s' % (ff, hh, tt, ' [全命中]' if fr else ''))
+            if rate < 0.7:
+                self.set_status('游戏版本过新',
+                                '内置表都不匹配，等作者更新（可在自检里看日志）')
+                return
+            main_ct = next(iter(idx))
+            if best == main_ct:
+                self.set_status('已附加游戏 WorldApart.exe (PID %d)' % pid,
+                                '表指纹识别：最新版（%d/%d 特征匹配）' % (hit, total))
+                return
+            self.send_cmd('LOAD|%s' % best)
+            self.set_status('已附加游戏 WorldApart.exe (PID %d)' % pid,
+                            '按表指纹加载 %s（%d/%d%s）'
+                            % (best, hit, total,
+                               '' if full else '，部分功能可能不可用'))
         except Exception as e:
             log_boot('table detect error: %r' % e)
-            return
-        log_boot('table detect: %s hits=%d' % (mode, hits))
-        if mode == 'v1110':
-            self.set_status('已附加游戏 WorldApart.exe (PID %d)' % pid,
-                            '已识别 11-10 新版游戏，加载完整功能表')
-            return
-        tbl = {'v1023': 'BWF_tbl_1017.CT',
-               'v1001': 'BWF_tbl_1001.CT',
-               'v0929': 'BWF_tbl_0929.CT'}.get(mode)
-        if not tbl:
-            self.set_status('游戏版本过新或过旧', '当前表无法适配，等作者更新')
-            return
-        tname, sup = TABLE_NAMES[mode]
-        self.send_cmd('LOAD|%s' % tbl)
-        self.set_status('已附加游戏 WorldApart.exe (PID %d)' % pid,
-                        '已按游戏版本加载%s：支持 %s' % (tname, sup))
 
     # ---------- 自检：定位“读不到数”的原因 ----------
     def on_diag(self):
