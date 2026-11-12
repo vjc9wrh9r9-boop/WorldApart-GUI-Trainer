@@ -47,7 +47,8 @@ def main():
     # 2) 生成版本切换表
     run([PY, os.path.join(HERE, 'make_tables.py')])
 
-    # 3) 打 res.zip 到 src/
+    # 3) 生成表指纹索引 + 打 res.zip
+    run([PY, os.path.join(HERE, 'gen_table_index.py')])
     run([PY, os.path.join(HERE, 'pack_res.py')])
 
     # 4) 图标就位
