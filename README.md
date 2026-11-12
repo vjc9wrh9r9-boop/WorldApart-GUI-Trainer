@@ -72,10 +72,7 @@ scripts/publish_github.py  一键发版（源码/文档/Release 全同步）
 docs/使用说明.txt    完整图文使用说明
 version.json         自动更新元数据
 BUILD.md             构建指南
-.gitignore           构建产物排除清单
 ```
-
-> `src/res.zip` 与 `dist/` 为构建产物，不入库（见 .gitignore）。
 
 > **本仓库不含** Cheat Engine 运行时与修改表数据，请从原作者网盘获取。
 
