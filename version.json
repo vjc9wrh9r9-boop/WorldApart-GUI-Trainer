@@ -1,7 +1,7 @@
 {
   "version": "2.1",
   "date": "2026-11-13",
-  "note": "自检通过：表指纹识别（按每张表 aobscan 命中率自动选表，新增表无需改代码）、修复自动更新检查（补 ssl/http/email 模块+镜像兜底）",
+  "note": "旧版本游戏适配：所有切换表 ID 统一到新体系（物品/声望/炼丹危险度/灵根点数），切表后界面功能全部可用",
   "download": "https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest",
   "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.1/BWF-Trainer-V2.1.exe"
 }
