@@ -159,6 +159,20 @@ local function handleLine(line)
     local v = '?'
     pcall(function() v = mr.Value end)
     report('VAL|' .. id .. '|' .. tostring(v))
+  elseif op == 'FRZ' then
+    -- 冻结数值条目到指定值（升级/重算也覆盖不掉）
+    local flag = tonumber(p[3]) or 0
+    if flag == 1 and p[4] then
+      pcall(function() mr.Value = tostring(p[4]) end)
+    end
+    local ok5, e5 = pcall(function() mr.Active = (flag == 1) end)
+    if ok5 then
+      report('FROZEN|' .. id .. '|' .. flag)
+      logln('FRZ ' .. id .. ' = ' .. tostring(flag) ..
+            (flag == 1 and (' @ ' .. tostring(mr.Value)) or ''))
+    else
+      report('ERR|freeze: ' .. tostring(e5))
+    end
   end
 end
 
