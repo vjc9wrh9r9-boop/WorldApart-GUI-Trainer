@@ -20,7 +20,7 @@ from tkinter import ttk, messagebox
 
 APP_NAME = "不问凡尘修改器"
 VERSION = "2.1"
-RT_VER = "15"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
+RT_VER = "16"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
 
 TMP = os.environ.get('TEMP') or os.environ.get('TMP') or r'C:\Windows\Temp'
 LOCAL = os.environ.get('LOCALAPPDATA') or TMP
@@ -49,7 +49,7 @@ FEATURES = [
     {"id": 39, "name": "NPC 友好度修改", "hint": "送礼界面：点一下要送的物品（不用确认）", "values": [(40, "当前友好度"), (42, "当前人物友好度上限")]},
     {"id": 55, "name": "修为修改", "hint": "先打开【人物属性】界面，再点读取", "values": [(57, "修为值"), (58, "丹田灵气"), (56, "善恶值")]},
     {"id": 1430, "name": "物品数量修改", "hint": "背包里点选一件物品（选中），再点读取", "values": [(1431, "数量")]},
-    {"id": 25, "name": "人物属性修改", "hint": "必须打一场野怪，战斗胜利后再读取（切磋不算）", "values": [
+    {"id": 25, "name": "人物属性修改", "hint": "打完一场野怪后读取；升级会重算属性，改完点【锁定】防覆盖", "values": [
         (26, "当前血量"), (27, "血量上限"), (32, "当前灵力"), (31, "灵力上限"),
         (28, "攻击"), (29, "防御"), (30, "速度"), (33, "暴击率"),
         (34, "暴击伤害"), (35, "命中"), (36, "闪避"), (37, "当前精力")]},
@@ -126,7 +126,7 @@ def save_theme_pref(name):
 
 UI_DIR = os.path.join(APP_DIR, 'ui')
 MAIN_W, MAIN_H = 720, 864
-CFG_W = 540
+CFG_W = 620
 TITLE_H = 40          # 主窗口自绘标题栏高度
 CFG_TITLE_H = 36      # 配置窗口自绘标题栏高度
 
@@ -956,6 +956,7 @@ class App:
         self.feat_fail = set()
         self.pending_on = {}
         self.pending_sets = {}
+        self.frozen = set()
         self.verify_vals = {}
         self.write_total = 0
         self.write_ok = 0
@@ -1152,6 +1153,10 @@ class App:
                 elif c == 'hotkey' and len(a) >= 2:
                     self.hotkey_q.put(int(a[1]))
                     out.append('ok hotkey ' + a[1])
+                elif c == 'send' and len(a) >= 2:
+                    # 透传任意命令（测试用）：send FRZ|26|1|9999
+                    self.send_cmd(a[1])
+                    out.append('ok send ' + a[1][:40])
                 elif c == 'load' and len(a) >= 2:
                     self.send_cmd('LOAD|%s' % a[1])
                     out.append('ok load ' + a[1])
@@ -1929,6 +1934,8 @@ class App:
                         else:
                             self.set_status(detail="写入完成：%d 项成功，%d 项没生效（数值可能被游戏覆盖）"
                                             % (okn, badn))
+        elif ev == "FROZEN" and len(rest) >= 3:
+            log_boot('freeze %s -> %s' % (rest[1], rest[2]))
         elif ev == "ERR":
             msg = "|".join(rest[1:])
             low = msg.lower()
@@ -2440,6 +2447,9 @@ class App:
             cv.create_window(200, y, window=ent, width=210, height=32, anchor='nw')
             self._rect_button(cv, 422, y, 72, 32, "读 取",
                               (lambda r=rid: self.on_read_value(r)), f'rd{rid}', small=True)
+            self._rect_button(cv, 500, y, 92, 32, "锁 定",
+                              (lambda r=rid, v=var: self.on_freeze(r, v)),
+                              f'fz{rid}', small=True)
             self.cfg_rows.append((rid, var))
             y += row_h
 
@@ -2525,6 +2535,31 @@ class App:
                 else:
                     var.set(val)
                 break
+
+    def on_freeze(self, rid, var):
+        """锁定/解锁：用 CE 冻结把数值焊死（升级重算也覆盖不掉）"""
+        key = ('frz', rid)
+        locked = key in self.frozen
+        if locked:
+            self.send_cmd('FRZ|%d|0' % rid)
+            self.frozen.discard(key)
+            self.set_status(detail='已解锁 %s（升级又会被重算）' % self._fname(rid))
+        else:
+            v = var.get().strip()
+            if not v:
+                self.set_status(detail='先填数值再锁定')
+                return
+            self.send_cmd('FRZ|%d|1|%s' % (rid, v))
+            self.frozen.add(key)
+            self.set_status(detail='已锁定 %s = %s，升级也不会被覆盖'
+                            % (self._fname(rid), v))
+
+    def _fname(self, rid):
+        for f in FEATURES:
+            for vid, name in f['values']:
+                if vid == rid:
+                    return name
+        return 'ID %d' % rid
 
     def on_write_all(self):
         pairs = [(rid, var.get().strip()) for rid, var in self.cfg_rows]
