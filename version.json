@@ -1,7 +1,7 @@
 {
-  "version": "2.1",
+  "version": "2.2",
   "date": "2026-11-14",
-  "note": "更新到 11-14 表（特征码与 11-10 相同，游戏函数未变，表小修）；含锁定功能",
+  "note": "V2.2：锁定功能（升级不还原）+ 11-14 表适配 + 修复自动更新检查",
   "download": "https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest",
-  "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.1/BWF-Trainer-V2.1.exe"
+  "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.2/BWF-Trainer-V2.2.exe"
 }
