@@ -1,7 +1,7 @@
 {
   "version": "2.3.2",
   "date": "2026-11-26",
-  "note": "V2.3.2：进程识别加固（兼容 WorldApart-Win64-Shipping.exe 等 Steam/UE 变体命名），进程匹配不再依赖具体 exe 名",
+  "note": "V2.3.2 使用说明更新：适配 11-26 表、新增新电脑/杀软章节、修为注意事项",
   "download": "https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest",
   "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.3.2/BWF-Trainer-V2.3.2.exe"
 }
