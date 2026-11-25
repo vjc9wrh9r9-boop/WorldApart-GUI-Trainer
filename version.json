@@ -1,7 +1,7 @@
 {
-  "version": "2.3.1",
+  "version": "2.3.2",
   "date": "2026-11-26",
-  "note": "V2.3.1：用 11-14 版修为脚本修补 11-26 表的修为缺陷（作者新表 pm_player 符号缺失），修为恢复可用",
+  "note": "V2.3.2：进程识别加固（兼容 WorldApart-Win64-Shipping.exe 等 Steam/UE 变体命名），进程匹配不再依赖具体 exe 名",
   "download": "https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest",
-  "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.3.1/BWF-Trainer-V2.3.1.exe"
+  "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.3.2/BWF-Trainer-V2.3.2.exe"
 }
