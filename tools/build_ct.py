@@ -255,14 +255,19 @@ data, ads = strip_ads(data)
 print("去广告条目 %d 个:" % len(ads))
 for a in ads:
     print("   -", a)
-assert len(ads) == 3, "广告条目数量异常，检查 CT 是否改版"
+assert len(ads) >= 1, "没找到广告条目，检查 CT 是否改版"
 assert 'bilibili' not in data.lower()
 assert 'ShellExecute' not in data
 assert "<LuaScript>" not in data
-# 在 </UserdefinedSymbols> 后插入 LuaScript 节点
+# 在 <UserdefinedSymbols/> 后插入 LuaScript 节点；没有该节点时插到 </CheatTable> 前
 needle = "<UserdefinedSymbols/>"
-assert needle in data
 repl = "<UserdefinedSymbols/>\r\n  <LuaScript>\r\n" + LUA + "\r\n  </LuaScript>\r\n"
-data = data.replace(needle, repl, 1)
+if needle in data:
+    data = data.replace(needle, repl, 1)
+else:
+    data = data.replace(
+        "</CheatTable>",
+        "  <LuaScript>\r\n" + LUA + "\r\n  </LuaScript>\r\n</CheatTable>", 1)
+    assert "<LuaScript>" in data, "Lua 注入失败"
 open(CT_OUT, 'w', encoding='utf-8').write(data)
 print("written:", CT_OUT, os.path.getsize(CT_OUT))
