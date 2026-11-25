@@ -19,7 +19,7 @@ from ctypes import wintypes
 from tkinter import ttk, messagebox
 
 APP_NAME = "不问凡尘修改器"
-VERSION = "2.3.1"
+VERSION = "2.3.2"
 RT_VER = "18"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
 
 TMP = os.environ.get('TEMP') or os.environ.get('TMP') or r'C:\Windows\Temp'
@@ -551,13 +551,18 @@ def find_process(name):
         pe.dwSize = ctypes.sizeof(PROCESSENTRY32)
         ok = k32.Process32First(snap, ctypes.byref(pe))
         target = name.lower()
-        cands = []
+        stem = target[:-4] if target.endswith('.exe') else target
+        exact, fuzzy = [], []
         while ok:
             exe = pe.szExeFile.decode('gbk', errors='ignore').lower()
             if exe == target:
-                cands.append(pe.th32ProcessID)
+                exact.append(pe.th32ProcessID)
+            elif exe.endswith('.exe') and stem in exe:
+                # 兼容 Steam/UE 变体命名：WorldApart-Win64-Shipping.exe 等
+                fuzzy.append(pe.th32ProcessID)
             ok = k32.Process32Next(snap, ctypes.byref(pe))
         k32.CloseHandle(snap)
+        cands = exact or fuzzy
         if not cands:
             return 0
         if len(cands) == 1:
