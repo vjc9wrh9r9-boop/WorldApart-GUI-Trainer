@@ -1,7 +1,7 @@
 {
-  "version": "2.3",
+  "version": "2.3.1",
   "date": "2026-11-26",
-  "note": "V2.3：适配 11-26 表（作者启用混淆格式+修为模块重构）；10 项功能 ID 不变，修为改为静态地址读取",
+  "note": "V2.3.1：用 11-14 版修为脚本修补 11-26 表的修为缺陷（作者新表 pm_player 符号缺失），修为恢复可用",
   "download": "https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest",
-  "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.3/BWF-Trainer-V2.3.exe"
+  "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.3.1/BWF-Trainer-V2.3.1.exe"
 }
