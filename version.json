@@ -1,7 +1,7 @@
 {
-  "version": "2.3.2",
+  "version": "2.3.3",
   "date": "2026-11-26",
-  "note": "V2.3.2 使用说明更新：适配 11-26 表、新增新电脑/杀软章节、修为注意事项",
-  "download": "https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest",
-  "download_mirror": "https://gh-proxy.com/https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/download/v2.3.2/BWF-Trainer-V2.3.2.exe"
+  "note": "V2.3.3：换用 11-26 V2 表（明文格式、修复昵称地址），修为用旧脚本修补；仓库迁移后更新所有地址",
+  "download": "https://github.com/haochihc/WorldApart-GUI-Trainer/releases/latest",
+  "download_mirror": "https://gh-proxy.com/https://github.com/haochihc/WorldApart-GUI-Trainer/releases/download/v2.3.3/BWF-Trainer-V2.3.3.exe"
 }
