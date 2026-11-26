@@ -19,8 +19,8 @@ from ctypes import wintypes
 from tkinter import ttk, messagebox
 
 APP_NAME = "不问凡尘修改器"
-VERSION = "2.3.2"
-RT_VER = "18"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
+VERSION = "2.3.3"
+RT_VER = "19"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
 
 TMP = os.environ.get('TEMP') or os.environ.get('TMP') or r'C:\Windows\Temp'
 LOCAL = os.environ.get('LOCALAPPDATA') or TMP
@@ -734,10 +734,10 @@ TABLE_NAMES = {
 
 # --- 自动更新：GitHub 仓库的 version.json ---
 UPDATE_JSON_URLS = [
-    "https://raw.githubusercontent.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/main/version.json",
-    "https://gh-proxy.com/https://raw.githubusercontent.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/main/version.json",
+    "https://raw.githubusercontent.com/haochihc/WorldApart-GUI-Trainer/main/version.json",
+    "https://gh-proxy.com/https://raw.githubusercontent.com/haochihc/WorldApart-GUI-Trainer/main/version.json",
 ]
-RELEASE_PAGE = "https://github.com/vjc9wrh9r9-boop/WorldApart-GUI-Trainer/releases/latest"
+RELEASE_PAGE = "https://github.com/haochihc/WorldApart-GUI-Trainer/releases/latest"
 
 
 def open_release_page():
