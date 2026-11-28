@@ -1,7 +1,7 @@
 {
-  "version": "2.3.3",
-  "date": "2026-11-26",
-  "note": "V2.3.3：换用 11-26 V2 表（明文格式、修复昵称地址），修为用旧脚本修补；仓库迁移后更新所有地址",
+  "version": "2.4",
+  "date": "2026-11-28",
+  "note": "V2.4：内置 8 个版本表（09-29/10-01/10-17/10-20/10-23/11-10/11-14/11-26），表指纹自动识别切换，覆盖全部官方基线版本",
   "download": "https://github.com/haochihc/WorldApart-GUI-Trainer/releases/latest",
-  "download_mirror": "https://gh-proxy.com/https://github.com/haochihc/WorldApart-GUI-Trainer/releases/download/v2.3.3/BWF-Trainer-V2.3.3.exe"
+  "download_mirror": "https://gh-proxy.com/https://github.com/haochihc/WorldApart-GUI-Trainer/releases/download/v2.4/BWF-Trainer-V2.4.exe"
 }
