@@ -132,6 +132,21 @@ local function handleLine(line)
     report('DUMPED|' .. #lines)
     return
   end
+  -- SYM / MEM：不需要数字 ID，必须放在 id 校验之前
+  if op == 'SYM' then
+    local nm = p[2] or ''
+    local ok, a = pcall(function() return getAddress(nm) end)
+    report('SYM|' .. nm .. '|' .. tostring(ok) .. '|' .. tostring(a))
+    return
+  end
+  if op == 'MEM' then
+    local a = tonumber(p[2]) or 0
+    local n = tonumber(p[3]) or 64
+    local out = {}
+    for i = 0, n - 1 do out[#out + 1] = string.format('%02X', readBytes(a + i, 1) or 0) end
+    report('MEM|' .. table.concat(out))
+    return
+  end
   local id = tonumber(p[2])
   if not id then report('ERR|bad id') return end
   local list = getAL()
@@ -159,6 +174,30 @@ local function handleLine(line)
     local v = '?'
     pcall(function() v = mr.Value end)
     report('VAL|' .. id .. '|' .. tostring(v))
+  elseif op == 'ACT' then
+    local id = tonumber(p[2]) or 0
+    local flag = tonumber(p[3]) or 1
+    local al2 = getAddressList()
+    local mr = al2.getMemoryRecordByID(id)
+    if mr then
+      local ok, e = pcall(function() mr.Active = (flag == 1) end)
+      report('ACT|' .. id .. '|' .. flag .. '|' .. tostring(ok) .. '|' .. tostring(e or ''))
+    else
+      report('ERR|no memrec ' .. id)
+    end
+  elseif op == 'SYM' then
+    local nm = p[2] or ''
+    local ok, a = pcall(function() return getAddress(nm) end)
+    report('SYM|' .. nm .. '|' .. tostring(ok) .. '|' .. tostring(a))
+  elseif op == 'MEM' then
+    local a = tonumber(p[2]) or 0
+    local n = tonumber(p[3]) or 64
+    local out = {}
+    for i = 0, n - 1 do
+      local b = readBytes(a + i, 1)
+      out[#out + 1] = string.format('%02X', b or 0)
+    end
+    report('MEM|' .. table.concat(out))
   elseif op == 'FRZ' then
     -- 冻结数值条目到指定值（升级/重算也覆盖不掉）
     local flag = tonumber(p[3]) or 0
