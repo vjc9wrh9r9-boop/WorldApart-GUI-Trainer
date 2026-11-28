@@ -19,8 +19,8 @@ from ctypes import wintypes
 from tkinter import ttk, messagebox
 
 APP_NAME = "不问凡尘修改器"
-VERSION = "2.4"
-RT_VER = "21"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
+VERSION = "2.4.1"
+RT_VER = "22"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
 
 TMP = os.environ.get('TEMP') or os.environ.get('TMP') or r'C:\Windows\Temp'
 LOCAL = os.environ.get('LOCALAPPDATA') or TMP
@@ -819,6 +819,41 @@ def _load_table_index():
             return json.load(f)
     except Exception:
         return {}
+
+
+def detect_mod_env(pid):
+    """检测游戏进程是否加载了 Mod 加载器（MelonLoader / BepInEx / Il2CppInterop）。
+       返回命中的模块名列表；空列表 = 干净环境。"""
+    hits = []
+    try:
+        k32 = ctypes.WinDLL('kernel32', use_last_error=True)
+        snap = k32.CreateToolhelp32Snapshot(0x8 | 0x10, pid)
+        if snap == -1:
+            return hits
+
+        class ME32(ctypes.Structure):
+            _fields_ = [('dwSize', wintypes.DWORD), ('th32ModuleID', wintypes.DWORD),
+                        ('th32ProcessID', wintypes.DWORD), ('GlblcntUsage', wintypes.DWORD),
+                        ('ProccntUsage', wintypes.DWORD), ('modBaseAddr', ctypes.c_void_p),
+                        ('modBaseSize', wintypes.DWORD), ('hModule', wintypes.HMODULE),
+                        ('szModule', ctypes.c_char * 256), ('szExePath', ctypes.c_char * 260)]
+
+        me = ME32()
+        me.dwSize = ctypes.sizeof(ME32)
+        ok = k32.Module32First(snap, ctypes.byref(me))
+        keys = ('melonloader', 'bepinex', 'il2cppinterop', 'monomod', 'harmony',
+                'doorstop', 'winhttp')
+        while ok:
+            name = me.szModule.decode('gbk', errors='ignore').lower()
+            for k in keys:
+                if k in name:
+                    hits.append(me.szModule.decode('gbk', errors='ignore'))
+                    break
+            ok = k32.Module32Next(snap, ctypes.byref(me))
+        k32.CloseHandle(snap)
+    except Exception:
+        pass
+    return hits
 
 
 def _scan_any_sigs(pid, sig_list):
@@ -2062,6 +2097,11 @@ class App:
     def _detect_table_bg(self, pid):
         try:
             time.sleep(2.0)          # 等 heal 与 openProcess 稳定
+            mods = detect_mod_env(pid)
+            if mods:
+                log_boot('mod env detected: %s' % ', '.join(mods[:4]))
+                self.set_status(detail='检测到 Mod 加载器（%s）→ 功能读不到请先关 Mod'
+                                % mods[0].split('.')[0])
             idx = _load_table_index()
             if not idx:
                 # 老包没有 tables.json：退回硬编码特征
