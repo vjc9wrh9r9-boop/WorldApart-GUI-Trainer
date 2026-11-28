@@ -1,7 +1,7 @@
 {
-  "version": "2.4",
+  "version": "2.4.1",
   "date": "2026-11-28",
-  "note": "V2.4：内置 8 个版本表（09-29/10-01/10-17/10-20/10-23/11-10/11-14/11-26），表指纹自动识别切换，覆盖全部官方基线版本",
+  "note": "V2.4.1：新增 Mod 环境检测（MelonLoader/BepInEx 自动识别提示）；修复游戏加载中扫描导致的误判",
   "download": "https://github.com/haochihc/WorldApart-GUI-Trainer/releases/latest",
-  "download_mirror": "https://gh-proxy.com/https://github.com/haochihc/WorldApart-GUI-Trainer/releases/download/v2.4/BWF-Trainer-V2.4.exe"
+  "download_mirror": "https://gh-proxy.com/https://github.com/haochihc/WorldApart-GUI-Trainer/releases/download/v2.4.1/BWF-Trainer-V2.4.1.exe"
 }
