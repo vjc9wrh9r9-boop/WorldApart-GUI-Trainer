@@ -19,8 +19,8 @@ from ctypes import wintypes
 from tkinter import ttk, messagebox
 
 APP_NAME = "不问凡尘修改器"
-VERSION = "2.4.1"
-RT_VER = "22"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
+VERSION = "2.4.2"
+RT_VER = "27"          # runtime 资源版本：与旧目录不一致时强制重新解压覆盖
 
 TMP = os.environ.get('TEMP') or os.environ.get('TMP') or r'C:\Windows\Temp'
 LOCAL = os.environ.get('LOCALAPPDATA') or TMP
@@ -2128,7 +2128,16 @@ class App:
                 for x in (info.get('sigs') or []):
                     if x not in all_sigs:
                         all_sigs.append(x)
-            hit_set = _scan_any_sigs(pid, all_sigs)
+            # 重试 3 次取最高分（规避加载中/战斗中的瞬时状态）
+            best_hits = {}
+            for attempt in range(3):
+                hs = _scan_any_sigs(pid, all_sigs)
+                if hs is not None:
+                    for x in hs:
+                        best_hits[x] = True
+                if attempt < 2:
+                    time.sleep(2.0)
+            hit_set = set(best_hits.keys()) if best_hits else None
             if hit_set is None:
                 log_boot('table index: 进程打不开（PID %d），跳过版本识别' % pid)
                 return
@@ -2149,20 +2158,20 @@ class App:
                      % (best, hit, total, rate * 100))
             for fr, rt, tt, hh, ff in scored:
                 log_boot('  idx %-30s %d/%d%s' % (ff, hh, tt, ' [全命中]' if fr else ''))
-            if rate < 0.7:
-                self.set_status('游戏版本过新',
-                                '内置表都不匹配，等作者更新（可在自检里看日志）')
+            if rate < 0.2:
+                log_boot('table index: 最高仅 %.0f%%，改用主表兜底' % (rate * 100))
+                self.set_status('版本识别不确定',
+                                '表匹配度过低（最高 %.0f%%），已加载主表，功能可能不全' % (rate * 100))
                 return
             main_ct = next(iter(idx))
+            tag = '' if full else '，部分功能可能不可用'
             if best == main_ct:
                 self.set_status('已附加游戏 WorldApart.exe (PID %d)' % pid,
-                                '表指纹识别：最新版（%d/%d 特征匹配）' % (hit, total))
+                                '表指纹识别：最新版（%d/%d 特征匹配%s）' % (hit, total, tag))
                 return
             self.send_cmd('LOAD|%s' % best)
             self.set_status('已附加游戏 WorldApart.exe (PID %d)' % pid,
-                            '按表指纹加载 %s（%d/%d%s）'
-                            % (best, hit, total,
-                               '' if full else '，部分功能可能不可用'))
+                            '按表指纹加载 %s（%d/%d%s）' % (best, hit, total, tag))
         except Exception as e:
             log_boot('table detect error: %r' % e)
 
