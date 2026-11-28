@@ -1,7 +1,7 @@
 {
-  "version": "2.4.1",
+  "version": "2.4.2",
   "date": "2026-11-28",
-  "note": "V2.4.1：新增 Mod 环境检测（MelonLoader/BepInEx 自动识别提示）；修复游戏加载中扫描导致的误判",
+  "note": "V2.4.2：指纹识别加固（3 次重试取最高分、低匹配度也加载最接近的表不再直接拒绝）",
   "download": "https://github.com/haochihc/WorldApart-GUI-Trainer/releases/latest",
-  "download_mirror": "https://gh-proxy.com/https://github.com/haochihc/WorldApart-GUI-Trainer/releases/download/v2.4.1/BWF-Trainer-V2.4.1.exe"
+  "download_mirror": "https://gh-proxy.com/https://github.com/haochihc/WorldApart-GUI-Trainer/releases/download/v2.4.2/BWF-Trainer-V2.4.2.exe"
 }
